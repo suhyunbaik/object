@@ -1,5 +1,6 @@
 import abc
 from abc import ABCMeta
+from enum import Enum
 
 
 class DiscountPolicy(metaclass=ABCMeta):
@@ -19,11 +20,28 @@ class DiscountPolicy(metaclass=ABCMeta):
         raise NotImplementedError()
 
 
+class DiscountConditionType(Enum):
+    SEQUENCE = 0
+    PERIOD = 1
+
+
 class DiscountCondition(metaclass=ABCMeta):
+    type: DiscountConditionType
+    sequence: int
+    day_of_week: DayOfWeek
+    start_time: Datetime
+    end_time: Datetime
 
     @abc.abstractmethod
     def is_satisfied_by(self, screening):
+        if type == DiscountConditionType.PERIOD:
+            return self._is_satisfied_by_period(screening)
+    def _is_satisfied_by_period(self, screening) -> bool:
         pass
+
+    def _is_satisfied_by_sequence(self, screening) -> bool:
+        return self.sequence == screening.get_sequence()
+
 
 
 class SequenceCondition(DiscountCondition):
@@ -37,24 +55,67 @@ class SequenceCondition(DiscountCondition):
         return screening.is_sequence(self._sequence)
 
 
+class MovieType(Enum):
+    AMOUNT_DISCOUNT = 0
+    PERCENT_DISCOUNT = 1
+    NONE_DISCOUNT = 2
+
+
 class Movie(object):
     def __init__(self):
-        self._title = ''
-        self._running_time = 0
-        self._fee = Money
-        self._discount_policy = DiscountPolicy
+        self._title: str
+        self._running_time: int
+        self._fee: Money
+        self._discount_condition: DiscountCondition
+        self._movie_type: MovieType
+        self._discount_amount: DiscountAmount
+        self._discount_percent: int
 
-    def movie(self, title, running_time, fee, discount_policy):
+    def movie(self, title, running_time, fee, discount_condition):
         self._title = title
         self._running_time = running_time
         self._fee = fee
-        self._discount_policy = discount_policy
+        self._discount_condition = discount_condition
 
     def get_fee(self):
         return self._fee
 
+    def _is_discountable(self, screening) -> bool:
+        # return DiscountCondition.stream().anyMatch(condition -> condition.is_satisfied_by(screening))
+        return
+
     def calculate_movie_fee(self, screening):
-        return self._fee.minus(self._discount_policy.calculate_discount_amount(screening))
+        if self._is_discountable(screening):
+            return self._fee.minus(self.calculate_discount_amount())
+        return self._fee
+
+    def _calculate_discount_amount(self):
+        return self._discount_amount
+
+    def _calculate_percent_discount_amount(self):
+        return self._fee.times(self._discount_percent)
+
+    def _calcualte_none_discount_amount(self):
+        return Money.ZERO
+
+    def discount_condition(self):
+        self.is_satisfied_by(screening)
+
+    def change_discount_condition(self, discount_condition):
+        self._discount_condition = discount_condition
+
+    def _calculate_discount_amount(self, money):
+        if MovieType.AMOUNT_DISCOUNT:
+            return self._calculate_discount_amount(money)
+        elif MovieType.PERCENT_DISCOUNT:
+            return self._calculate_percent_discount_amount()
+        elif MovieType.NONE_DISCOUNT:
+            return self._calcualte_none_discount_amount()
+
+
+class NoneDiscountPolicy(DiscountPolicy):
+    def get_discount_amount(self, screening):
+        return Money.ZERO
 
 
 class Screening(object):
@@ -77,8 +138,11 @@ class Screening(object):
     def get_movie_fee(self):
         return self._movie.get_fee()
 
-    def __calculate_fee(self, audience_count):
+    def __calculate_fee(self, audience_count: int):
         return self._movie.calculate_movie_fee().times(audience_count)
+
+    def reserve(self, customer, audience_count: int):
+        return Reservation(customer, self, self.__calculate_fee(audience_count), audience_count)
 
 
 class Money(object):
