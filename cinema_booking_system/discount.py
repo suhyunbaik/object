@@ -61,28 +61,10 @@ class PeriodCondition(DiscountCondition):
 
 
 class SequenceCondition(DiscountCondition):
-    def is_satisfied_by(self, screening: Screening) -> bool:
-        pass
+    def __init__(self, sequence: int):
+        self._sequence: int = sequence
 
-
-class SequenceCondition(object):
-    _sequence: int
-
-    def sequence_condition(self, sequence: int) -> NoReturn:
-        self._sequence = sequence
-
-    def is_satisfied_by(self, screening: Screening) -> bool:
-        return self._sequence == screening.get_sequence()
-
-
-class SequenceCondition(DiscountCondition):
-    def __init__(self):
-        self._sequence = 0
-
-    def sequence_condition(self, sequence):
-        self._sequence = sequence
-
-    def is_satisfied_by(self, screening):
+    def is_satisfied_by(self, screening: Screening):
         return screening.is_sequence(self._sequence)
 
 
