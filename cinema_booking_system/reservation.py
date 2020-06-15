@@ -11,10 +11,10 @@ class Customer(object):
 
 class Reservation(object):
     def __init__(self, customer, screening, fee, audience_count):
-        self._customer: Customer = customer
-        self._screening: Screening = screening
-        self._fee: Money = fee
-        self._audience_count: int = audience_count
+        self.__customer: Customer = customer
+        self.__screening: Screening = screening
+        self.__fee: Money = fee
+        self.__audience_count: int = audience_count
 
 
 class ReservationAgency(object):

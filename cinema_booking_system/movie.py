@@ -8,23 +8,24 @@ from cinema_booking_system.screening import Screening
 
 class Movie(metaclass=ABCMeta):
     def __init__(self, title, running_time, fee, discount_condition):
-        self._title: str = title
-        self._running_time: int = running_time
-        self._fee: Money = fee
-        self._discount_condition: [DiscountCondition] = discount_condition
+        self.__title: str = title
+        self.__running_time: int = running_time
+        self.__fee: Money = fee
+        self.__discount_condition: [DiscountCondition] = discount_condition
 
-    def get_fee(self) -> Money:
-        return self._fee
+    @property
+    def fee(self) -> Money:
+        return self.__fee
 
     def _is_discountable(self, screening: Screening) -> bool:
-        for condition in self._discount_condition:
+        for condition in self.__discount_condition:
             if condition.is_satisfied_by(screening):
                 return True
 
     def calculate_movie_fee(self, screening: Screening) -> Money:
         if self._is_discountable(screening):
-            return self._fee.minus(self.calculate_discount_amount())
-        return self._fee
+            return self.__fee.minus(self.calculate_discount_amount())
+        return self.__fee
 
     @abc.abstractmethod
     def _calculate_discount_amount(self):
@@ -34,16 +35,16 @@ class Movie(metaclass=ABCMeta):
 class AmountDiscountMovie(Movie):
     def __init__(self, title, running_time, fee, discount_amount, discount_condition):
         super().__init__(title, running_time, fee, discount_condition)
-        self._discount_amount: Money = discount_amount
+        self.__discount_amount: Money = discount_amount
 
     def _calculate_discount_amount(self):
-        return self._discount_amount
+        return self.__discount_amount
 
 
 class PercentDiscountMovie(Movie):
     def __init__(self, title, running_time, fee, percent, discount_conditions):
         super().__init__(title, running_time, fee, discount_conditions)
-        self._percent: Money = percent
+        self.__percent: Money = percent
 
     def calculate_movie_fee(self, screening: Screening) -> Money:
-        return self.get_fee().times(self._percent)
+        return self.fee.times(self.__percent)

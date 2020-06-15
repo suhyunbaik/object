@@ -39,14 +39,14 @@ class DiscountPolicy(metaclass=ABCMeta):
 
 
 class DiscountCondition(metaclass=ABCMeta):
-    _type: DiscountConditionType
-    _sequence: int
-    _day_of_week: datetime
-    _start_time: datetime
-    _end_time: datetime
+    __type: DiscountConditionType
+    __sequence: int
+    __day_of_week: datetime
+    __start_time: datetime
+    __end_time: datetime
 
     def is_discountable(self, screening) -> bool:
-        if self._type == DiscountConditionType.PERIOD:
+        if self.__type == DiscountConditionType.PERIOD:
             return self.is_satisfied_by_period(screening)
         return self.is_satisfied_by_sequence(screening)
 
@@ -61,10 +61,10 @@ class PeriodCondition(DiscountCondition):
 
 class SequenceCondition(DiscountCondition):
     def __init__(self, sequence: int):
-        self._sequence: int = sequence
+        self.__sequence: int = sequence
 
     def is_satisfied_by(self, screening: Screening):
-        return screening.is_sequence(self._sequence)
+        return screening.is_sequence(self.__sequence)
 
 
 class AmountDiscountMovie(Movie):
@@ -79,10 +79,10 @@ class AmountDiscountMovie(Movie):
 class PercentDiscountMovie(Movie):
     def __init__(self, title, running_time, fee, percent, discount_conditions):
         super().__init__(title, running_time, fee, discount_conditions)
-        self._percent: Money = percent
+        self.__percent: Money = percent
 
     def calculate_movie_fee(self, screening: Screening) -> Money:
-        return self.get_fee().times(self._percent)
+        return self.fee.times(self.__percent)
 
 
 class NoneDiscountMovie(Movie):
@@ -100,36 +100,30 @@ class NoneDiscountPolicy(DiscountPolicy):
 
 class PeriodCondition(DiscountCondition):
     def __init__(self, day_of_week, start_time, end_time):
-        self._day_of_week: datetime = day_of_week
-        self._start_time: datetime = start_time
-        self._end_time: datetime = end_time
+        self.__day_of_week: datetime = day_of_week
+        self.__start_time: datetime = start_time
+        self.__end_time: datetime = end_time
 
     def is_satisfied_by(self, screening) -> bool:
         # if screening time is between start time and end time than return true
-        if screening.get_start_time().get_day_of_week() == self._day_of_week:
-            if compare_to(self._start_time, self._end_time) <= 0:
+        if screening.get_start_time().get_day_of_week() == self.__day_of_week:
+            if compare_to(self.__start_time, self.__end_time) <= 0:
                 return True
             else:
                 return False
 
 
 class AmountDiscountPolicy(DiscountPolicy):
-    def __init__(self):
-        self._discount_amount = Money
-
-    def amount_discount_policy(self, discount_amount, conditions):
-        self._discount_amount = discount_amount
+    def __init__(self, discount_amount):
+        self.__discount_amount = discount_amount
 
     def get_discount_amount(self, screening: Screening):
-        return self._discount_amount
+        return self.__discount_amount
 
 
 class PercentDiscountPolicy(DiscountPolicy):
-    def __init__(self):
-        self._percent = 0
-
-    def percent_discount_policy(self, percent, conditions):
-        self._percent = percent
+    def __init__(self, percent):
+        self.__percent = percent
 
     def get_discount_amount(self, screening):
-        return screening.get_movie_fee().times(self._percent)
+        return screening.get_movie_fee().times(self.__percent)

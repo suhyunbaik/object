@@ -4,7 +4,7 @@ from cinema_booking_system.ticket_box_system import Ticket
 
 
 class Bag(object):
-    def __init__(self, ticket, invitation=None, amount=None):
+    def __init__(self, ticket=None, invitation=None, amount=None):
         self.__amount = amount
         self.__invitation = invitation
         self.__ticket: Ticket = ticket
