@@ -32,5 +32,5 @@ class Bag(object):
             return 0
         else:
             self.ticket(ticket)
-            self.__minus_amount(ticket.get_fee())
-            return self.__ticket.get_fee()
+            self.__minus_amount(ticket.fee())
+            return self.__ticket.fee()
