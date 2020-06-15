@@ -13,7 +13,7 @@ class Movie(metaclass=ABCMeta):
         self._fee: Money = fee
         self._discount_condition: [DiscountCondition] = discount_condition
 
-    def get_fee(self):
+    def get_fee(self) -> Money:
         return self._fee
 
     def _is_discountable(self, screening: Screening) -> bool:

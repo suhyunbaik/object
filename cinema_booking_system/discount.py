@@ -39,20 +39,19 @@ class DiscountPolicy(metaclass=ABCMeta):
 
 
 class DiscountCondition(metaclass=ABCMeta):
-    type: DiscountConditionType
-    sequence: int
-    day_of_week: datetime
-    start_time: datetime
-    end_time: datetime
+    _type: DiscountConditionType
+    _sequence: int
+    _day_of_week: datetime
+    _start_time: datetime
+    _end_time: datetime
 
-    def period_condition(self, day_of_week, start_time, end_time) -> NoReturn:
-        self.day_of_week = day_of_week
-        self.start_time = start_time
-        self.end_time = end_time
+    def is_discountable(self, screening) -> bool:
+        if self._type == DiscountConditionType.PERIOD:
+            return self.is_satisfied_by_period(screening)
+        return self.is_satisfied_by_sequence(screening)
 
-    @abc.abstractmethod
-    def is_satisfied_by(self, screening: Screening) -> bool:
-        raise NotImplementedError()
+    def is_satisfied_by(self, screening) -> bool:
+        pass
 
 
 class PeriodCondition(DiscountCondition):
@@ -84,6 +83,14 @@ class PercentDiscountMovie(Movie):
 
     def calculate_movie_fee(self, screening: Screening) -> Money:
         return self.get_fee().times(self._percent)
+
+
+class NoneDiscountMovie(Movie):
+    def __init__(self, title, running_time, fee, discount_conditions):
+        super().__init__(title, running_time, fee, discount_conditions)
+
+    def _calculate_discount_amount(self):
+        return Money.ZERO
 
 
 class NoneDiscountPolicy(DiscountPolicy):
