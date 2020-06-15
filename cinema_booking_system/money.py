@@ -1,9 +1,3 @@
-import abc
-from abc import ABCMeta
-from enum import Enum
-import datetime
-from typing import NoReturn
-
 from cinema_booking_system.utils import compare_to
 
 
@@ -13,7 +7,7 @@ class Money(object):
     def __init__(self, amount):
         self.__amount = amount
 
-    def wons(self, amount):
+    def wons(self, amount: int):
         return Money(amount)
 
     def plus(self, amount):

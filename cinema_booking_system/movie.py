@@ -8,15 +8,19 @@ from cinema_booking_system.screening import Screening
 
 class Movie(metaclass=ABCMeta):
     def __init__(self, title, running_time, fee, discount_condition, discount_policy):
+        self.__discount_policy = discount_policy
         self.__title: str = title
         self.__running_time: int = running_time
         self.__fee: Money = fee
         self.__discount_condition: [DiscountCondition] = discount_condition
-        self.__discount_policy: discount_policy
 
     @property
     def fee(self) -> Money:
         return self.__fee
+
+    @property
+    def discount_policy(self):
+        return self.__discount_policy
 
     def _is_discountable(self, screening: Screening) -> bool:
         for condition in self.__discount_condition:

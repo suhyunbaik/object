@@ -24,14 +24,14 @@ class DiscountConditionType(Enum):
 class DiscountPolicy(metaclass=ABCMeta):
     conditions = []
 
-    def discount_policy(self, conditions):
-        self.conditions = conditions
-
     def calculate_discount_amount(self, screening: Screening):
         for condition in self.conditions:
             if condition.is_satisfied_by(screening):
                 return self.get_discount_amount(screening)
         return Money.ZERO
+
+    def switch_conditions(self, conditions) -> NoReturn:
+        self.conditions = conditions
 
     @abc.abstractmethod
     def get_discount_amount(self, screening):
@@ -89,7 +89,7 @@ class NoneDiscountMovie(Movie):
 
 
 class NoneDiscountPolicy(DiscountPolicy):
-    def get_discount_amount(self, screening):
+    def get_discount_amount(self, screening: Screening):
         return Money.ZERO
 
 
@@ -122,3 +122,14 @@ class PercentDiscountPolicy(DiscountPolicy):
 
     def get_discount_amount(self, screening):
         return screening.get_movie_fee().times(self.__percent)
+
+
+class OverlappedDiscountPolicy(DiscountPolicy):
+    def __init__(self, discount_policies):
+        self.__discount_policies: [DiscountPolicy] = discount_policies
+
+    def get_discount_amount(self, screening):
+        result = Money.ZERO
+        for _ in self.__discount_policies:
+            result = result.__add__(_.calculate_discount_amount(screening))
+        return result
