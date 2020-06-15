@@ -54,11 +54,6 @@ class DiscountCondition(metaclass=ABCMeta):
         pass
 
 
-class PeriodCondition(DiscountCondition):
-    def is_satisfied_by(self, screening: Screening) -> bool:
-        pass
-
-
 class SequenceCondition(DiscountCondition):
     def __init__(self, sequence: int):
         self.__sequence: int = sequence
@@ -104,7 +99,7 @@ class PeriodCondition(DiscountCondition):
         self.__start_time: datetime = start_time
         self.__end_time: datetime = end_time
 
-    def is_satisfied_by(self, screening) -> bool:
+    def is_satisfied_by(self, screening: Screening) -> bool:
         # if screening time is between start time and end time than return true
         if screening.get_start_time().get_day_of_week() == self.__day_of_week:
             if compare_to(self.__start_time, self.__end_time) <= 0:

@@ -7,6 +7,5 @@ object oriented programming codes python version from book 'Object'
 
 
 #### Examples
-##### 1. Ticket box system
-
-##### 2. Cinema booking system
+##### 1. Cinema booking system
+##### 2. Payroll system

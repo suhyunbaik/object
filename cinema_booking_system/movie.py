@@ -7,11 +7,12 @@ from cinema_booking_system.screening import Screening
 
 
 class Movie(metaclass=ABCMeta):
-    def __init__(self, title, running_time, fee, discount_condition):
+    def __init__(self, title, running_time, fee, discount_condition, discount_policy):
         self.__title: str = title
         self.__running_time: int = running_time
         self.__fee: Money = fee
         self.__discount_condition: [DiscountCondition] = discount_condition
+        self.__discount_policy: discount_policy
 
     @property
     def fee(self) -> Money:
@@ -24,11 +25,11 @@ class Movie(metaclass=ABCMeta):
 
     def calculate_movie_fee(self, screening: Screening) -> Money:
         if self._is_discountable(screening):
-            return self.__fee.minus(self.calculate_discount_amount())
+            return self.__fee.minus(self.__calculate_discount_amount())
         return self.__fee
 
     @abc.abstractmethod
-    def _calculate_discount_amount(self):
+    def __calculate_discount_amount(self):
         raise NotImplementedError()
 
 

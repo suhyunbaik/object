@@ -1,7 +1,5 @@
-from cinema_booking_system.discount import DiscountConditionType, DiscountCondition
 from cinema_booking_system.money import Money
 from cinema_booking_system.screening import Screening
-from cinema_booking_system.utils import compare_to
 
 
 class Customer(object):
