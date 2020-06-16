@@ -1,4 +1,5 @@
 import datetime
+from enum import Enum
 
 from cinema_booking_system.money import Money
 
@@ -22,12 +23,20 @@ class Call(object):
         return self.__to
 
 
+class PhoneType(Enum):
+    REGULAR = 'regular'
+    NIGHTLY = 'nightly'
+
+
 class Phone(object):
-    def __init__(self, amount, seconds, tax_rate):
+    LATE_NIGHT_HOUR = 22
+
+    def __init__(self, _type, amount, regular_amount, nightly_amount, seconds):
+        self.__type: PhoneType = _type
         self.__amount: Money = amount
+        self.__regular_amount = regular_amount
+        self.__nightly_amount = nightly_amount
         self.__seconds: datetime = seconds
-        self.__calls: [] = []
-        self.__tax_rate = tax_rate
 
     @property
     def call(self):
@@ -53,31 +62,17 @@ class Phone(object):
         result = Money.ZERO
 
         for call in self.__calls:
-            result += self.__amount.times(call.duration.total_seconds() / self.__seconds.total_seconds())
-
-        return result + result.times(self.__tax_rate)
-
-
-class NightlyDiscountPlan(object):
-    LATE_NIGHT_HOUR = 22
-
-    def __init__(self, nightly_amount, regular_amount, seconds, tax_rate):
-        self.__nightly_amount = nightly_amount
-        self.__regular_amount = regular_amount
-        self.__seconds = seconds
-        self.__calls = []
-        self.__tax_rate = tax_rate
-
-    def calculate_fee(self):
-        result = Money.ZERO
-
-        for call in self.__calls:
-            if call._from.hours() >= self.LATE_NIGHT_HOUR:
-                result += self.__nightly_amount.times(call.duration.total_seconds() / self.__seconds.total_seconds())
+            if self.__type == PhoneType.REGULAR:
+                result += self.__amount.times(call.duration.total_seconds / self.__seconds.total_seconds())
             else:
-                result += self.__regular_amount.times(call.duration.total_seconds() / self.__seconds.total_seconds())
+                if call._from.hour() >= self.LATE_NIGHT_HOUR:
+                    result += self.__nightly_amount.times(
+                        call.duration.total_seconds() / self.__seconds.total_seconds())
+                else:
+                    result += self.__regular_amount.times(
+                        call.duration.total_seconds() / self.__seconds.total_seconds())
 
-        return result - result.times(self.__tax_rate)
+        return result
 
 
 if __name__ == '__main__':
@@ -88,4 +83,3 @@ if __name__ == '__main__':
     phone.call = Call(datetime.datetime(2018, 1, 1, 12, 10, 0), datetime.datetime(2018, 1, 1, 12, 11, 0))
     phone.call = Call(datetime.datetime(2018, 1, 2, 12, 10, 0), datetime.datetime(2018, 1, 2, 12, 11, 0))
     print(phone.calculate_fee())
-
