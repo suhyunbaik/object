@@ -23,10 +23,11 @@ class Call(object):
 
 
 class Phone(object):
-    def __init__(self, amount, seconds):
+    def __init__(self, amount, seconds, tax_rate):
         self.__amount: Money = amount
         self.__seconds: datetime = seconds
         self.__calls: [] = []
+        self.__tax_rate = tax_rate
 
     @property
     def call(self):
@@ -54,17 +55,18 @@ class Phone(object):
         for call in self.__calls:
             result += self.__amount.times(call.duration.total_seconds() / self.__seconds.total_seconds())
 
-        return result
+        return result + result.times(self.__tax_rate)
 
 
 class NightlyDiscountPlan(object):
     LATE_NIGHT_HOUR = 22
 
-    def __init__(self, nightly_amount, regular_amount, seconds):
+    def __init__(self, nightly_amount, regular_amount, seconds, tax_rate):
         self.__nightly_amount = nightly_amount
         self.__regular_amount = regular_amount
         self.__seconds = seconds
         self.__calls = []
+        self.__tax_rate = tax_rate
 
     def calculate_fee(self):
         result = Money.ZERO
@@ -74,7 +76,8 @@ class NightlyDiscountPlan(object):
                 result += self.__nightly_amount.times(call.duration.total_seconds() / self.__seconds.total_seconds())
             else:
                 result += self.__regular_amount.times(call.duration.total_seconds() / self.__seconds.total_seconds())
-            return result
+
+        return result - result.times(self.__tax_rate)
 
 
 if __name__ == '__main__':
