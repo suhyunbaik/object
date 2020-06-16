@@ -22,7 +22,14 @@ class DiscountConditionType(Enum):
 
 
 class DiscountPolicy(metaclass=ABCMeta):
-    conditions = []
+
+    @property
+    def conditions(self):
+        return self._conditions
+
+    @conditions.setter
+    def conditions(self, arg: [DiscountCondition]):
+        self._conditions = arg
 
     def calculate_discount_amount(self, screening: Screening):
         for condition in self.conditions:
