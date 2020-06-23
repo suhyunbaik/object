@@ -1,7 +1,7 @@
 class Song(object):
     def __init__(self):
-        self._singer: str = None
-        self._title: str = None
+        self._singer: str = ''
+        self._title: str = ''
 
     @property
     def singer(self):
@@ -41,3 +41,4 @@ class Playlist(object):
 class PersonalPlaylist(Playlist):
     def remove(self, song):
         self.tracks.remove(song)
+        del self.singers[song.singer]

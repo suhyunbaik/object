@@ -75,6 +75,45 @@ class Phone(object):
         return result
 
 
+class NightlyDiscountPhone(Phone):
+    LATE_NIGHT_HOUR = 22
+
+    @property
+    def seconds(self):
+        return self.__seconds
+
+    @seconds.setter
+    def seconds(self, arg):
+        self.__seconds = arg
+
+    @property
+    def nightly_amount(self):
+        return self.__nightly_amount
+
+    @nightly_amount.setter
+    def nightly_amount(self, arg):
+        self.__nightly_amount = arg
+
+    @property
+    def regular_amount(self):
+        return self.__regular_amount
+
+    @regular_amount.setter
+    def regular_amount(self, arg):
+        self.__regular_amount = arg
+
+    def calculate_fee(self):
+        result: Money = Money.ZERO
+
+        for call in self.__calls:
+            if call._from.hour() >= self.LATE_NIGHT_HOUR:
+                result += self.__nightly_amount.times(call.duration.total_seconds / self.__seconds.total_seconds())
+            else:
+                result += self.__regular_amount.times(call.duration.total_seconds / self.__seconds.total_seconds())
+
+        return result
+
+
 if __name__ == '__main__':
     money = Money()
     money.wons = 5
