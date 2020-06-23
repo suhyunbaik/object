@@ -128,11 +128,54 @@ class NightlyDiscountPhone(AbstractPhone):
             return self.__regular_amount.times(call.duration.total_seconds() / self.__seconds.total_seconds())
 
 
+class RatePolicy(metaclass=ABC):
+    def calculate_fee(self, phone) -> Money:
+        NotImplementedError()
+
+
+class BasicRatePolicy(RatePolicy):
+    def calculate_fee(self, phone) -> Money:
+        result = Money.ZERO
+
+        for call in self.__calls:
+            result.plus(self.calculate_call_fee(call))
+        return result
+
+    @abc.abstractmethod
+    def calculate_call_fee(self, call: Call):
+        NotImplementedError()
+
+
+class RegularPolicy(BasicRatePolicy):
+    def __init__(self, amount=None, seconds=None):
+        super().__init__()
+        self.__amount = amount
+        self.__seconds = seconds
+
+    def calculate_call_fee(self, call: Call):
+        return self.__amount.times(call.duration.total_seconds() / self.__seconds.total_seconds())
+
+
+class NightlyDiscountPolicy(BasicRatePolicy):
+    LATE_NIGHT_HOUR = 22
+
+    def __init__(self, nightly_amount=None, regular_amount=None, seconds=None):
+        super().__init__()
+        self.__nightly_amount: Money = nightly_amount
+        self.__regular_amount: Money = regular_amount
+        self.__seconds = seconds
+
+    def calculate_call_fee(self, call: Call):
+        if call.__from.hours() >= self.LATE_NIGHT_HOUR:
+            return self.__nightly_amount.times(call.duration.total_seconds() / self.__seconds.total_seconds())
+        return self.__regular_amount.times(call.duration.total_seconds() / self.__seconds.total_seconds())
+
+
 if __name__ == '__main__':
     money = Money()
     money.wons = 5
-
-    phone = Phone(money, datetime.timedelta(seconds=10))
-    phone.call = Call(datetime.datetime(2018, 1, 1, 12, 10, 0), datetime.datetime(2018, 1, 1, 12, 11, 0))
-    phone.call = Call(datetime.datetime(2018, 1, 2, 12, 10, 0), datetime.datetime(2018, 1, 2, 12, 11, 0))
-    print(phone.calculate_fee())
+    #
+    # phone = Phone(money, datetime.timedelta(seconds=10))
+    # phone.call = Call(datetime.datetime(2018, 1, 1, 12, 10, 0), datetime.datetime(2018, 1, 1, 12, 11, 0))
+    # phone.call = Call(datetime.datetime(2018, 1, 2, 12, 10, 0), datetime.datetime(2018, 1, 2, 12, 11, 0))
+    # print(phone.calculate_fee())
