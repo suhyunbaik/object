@@ -1,4 +1,6 @@
+import abc
 import datetime
+from abc import ABC
 from enum import Enum
 
 from cinema_booking_system.money import Money
@@ -28,14 +30,38 @@ class PhoneType(Enum):
     NIGHTLY = 'nightly'
 
 
-class Phone(object):
+class AbstractPhone(metaclass=ABC):
+    def __init__(self, tax_rate=None):
+        self.__calls: [Call] = []
+        self.__tax_rate: float = tax_rate
+
+    @property
+    def tax_rate(self):
+        return self.__tax_rate
+
+    @tax_rate.setter
+    def tax_rate(self, arg):
+        self.__tax_rate = arg
+
+    def calculate_fee(self) -> Money:
+        result = Money.ZERO
+
+        for call in self.__calls:
+            result += self.calculate_call_fee(call)
+        return result + (result * self.__tax_rate)
+
+    @abc.abstractmethod
+    def calculate_call_fee(self, call: Call):
+        NotImplementedError()
+
+
+class RegularPhone(AbstractPhone):
     LATE_NIGHT_HOUR = 22
 
-    def __init__(self, _type, amount, regular_amount, nightly_amount, seconds):
-        self.__type: PhoneType = _type
+    def __init__(self, amount=None, seconds=None, tax_rate=None):
+        super().__init__(tax_rate)
+        self.__calls: [Call] = []
         self.__amount: Money = amount
-        self.__regular_amount = regular_amount
-        self.__nightly_amount = nightly_amount
         self.__seconds: datetime = seconds
 
     @property
@@ -58,25 +84,18 @@ class Phone(object):
     def seconds(self, arg):
         self.__seconds = arg
 
-    def calculate_fee(self):
-        result = Money.ZERO
-
-        for call in self.__calls:
-            if self.__type == PhoneType.REGULAR:
-                result += self.__amount.times(call.duration.total_seconds / self.__seconds.total_seconds())
-            else:
-                if call._from.hour() >= self.LATE_NIGHT_HOUR:
-                    result += self.__nightly_amount.times(
-                        call.duration.total_seconds() / self.__seconds.total_seconds())
-                else:
-                    result += self.__regular_amount.times(
-                        call.duration.total_seconds() / self.__seconds.total_seconds())
-
-        return result
+    def calculate_call_fee(self, call: Call) -> Money:
+        return self.__amount.times(call.duration.total_seconds() / self.__seconds.total_seconds())
 
 
-class NightlyDiscountPhone(Phone):
+class NightlyDiscountPhone(AbstractPhone):
     LATE_NIGHT_HOUR = 22
+
+    def __init__(self, regular_amount=None, nightly_amount=None, seconds=None, tax_rate=None):
+        super().__init__(tax_rate)
+        self.__regular_amount: int = regular_amount
+        self.__nightly_amount: int = nightly_amount
+        self.__seconds: datetime = seconds
 
     @property
     def seconds(self):
@@ -102,16 +121,11 @@ class NightlyDiscountPhone(Phone):
     def regular_amount(self, arg):
         self.__regular_amount = arg
 
-    def calculate_fee(self):
-        result: Money = Money.ZERO
-
-        for call in self.__calls:
-            if call._from.hour() >= self.LATE_NIGHT_HOUR:
-                result += self.__nightly_amount.times(call.duration.total_seconds / self.__seconds.total_seconds())
-            else:
-                result += self.__regular_amount.times(call.duration.total_seconds / self.__seconds.total_seconds())
-
-        return result
+    def calculate_call_fee(self, call: Call) -> Money:
+        if call.__from.hour() >= self.LATE_NIGHT_HOUR:
+            return self.__nightly_amount.times(call.duration.total_seconds() / self.__seconds.total_seconds())
+        else:
+            return self.__regular_amount.times(call.duration.total_seconds() / self.__seconds.total_seconds())
 
 
 if __name__ == '__main__':
