@@ -93,8 +93,8 @@ class NightlyDiscountPhone(AbstractPhone):
 
     def __init__(self, regular_amount=None, nightly_amount=None, seconds=None, tax_rate=None):
         super().__init__(tax_rate)
-        self.__regular_amount: int = regular_amount
-        self.__nightly_amount: int = nightly_amount
+        self.__regular_amount: Money = regular_amount
+        self.__nightly_amount: Money = nightly_amount
         self.__seconds: datetime = seconds
 
     @property
