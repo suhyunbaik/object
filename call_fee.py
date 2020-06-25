@@ -30,106 +30,46 @@ class PhoneType(Enum):
     NIGHTLY = 'nightly'
 
 
-class AbstractPhone(metaclass=ABC):
+class Phone(object):
     def __init__(self, tax_rate=None):
         self.__calls: [Call] = []
-        self.__tax_rate: float = tax_rate
+        self.__rate_policy: RatePolicy = None
 
     @property
-    def tax_rate(self):
-        return self.__tax_rate
+    def rate_policy(self):
+        return self.__rate_policy
 
-    @tax_rate.setter
-    def tax_rate(self, arg):
-        self.__tax_rate = arg
+    @rate_policy.setter
+    def rate_policy(self, arg):
+        self.__rate_policy = arg
+
+    @property
+    def calls(self):
+        return self.__calls
 
     def calculate_fee(self) -> Money:
-        result = Money.ZERO
-
-        for call in self.__calls:
-            result += self.calculate_call_fee(call)
-        return result + (result * self.__tax_rate)
+        return self.__rate_policy.calculate_fee(self)
 
     @abc.abstractmethod
     def calculate_call_fee(self, call: Call):
         NotImplementedError()
 
 
-class RegularPhone(AbstractPhone):
-    LATE_NIGHT_HOUR = 22
-
-    def __init__(self, amount=None, seconds=None, tax_rate=None):
-        super().__init__(tax_rate)
-        self.__calls: [Call] = []
-        self.__amount: Money = amount
-        self.__seconds: datetime = seconds
-
-    @property
-    def call(self):
-        return self.__calls
-
-    @call.setter
-    def call(self, arg):
-        self.__calls.append(arg)
-
-    @property
-    def amount(self):
-        return self.__amount
-
-    @property
-    def seconds(self):
-        return self.__seconds
-
-    @seconds.setter
-    def seconds(self, arg):
-        self.__seconds = arg
-
-    def calculate_call_fee(self, call: Call) -> Money:
-        return self.__amount.times(call.duration.total_seconds() / self.__seconds.total_seconds())
-
-
-class NightlyDiscountPhone(AbstractPhone):
-    LATE_NIGHT_HOUR = 22
-
-    def __init__(self, regular_amount=None, nightly_amount=None, seconds=None, tax_rate=None):
-        super().__init__(tax_rate)
-        self.__regular_amount: Money = regular_amount
-        self.__nightly_amount: Money = nightly_amount
-        self.__seconds: datetime = seconds
-
-    @property
-    def seconds(self):
-        return self.__seconds
-
-    @seconds.setter
-    def seconds(self, arg):
-        self.__seconds = arg
-
-    @property
-    def nightly_amount(self):
-        return self.__nightly_amount
-
-    @nightly_amount.setter
-    def nightly_amount(self, arg):
-        self.__nightly_amount = arg
-
-    @property
-    def regular_amount(self):
-        return self.__regular_amount
-
-    @regular_amount.setter
-    def regular_amount(self, arg):
-        self.__regular_amount = arg
-
-    def calculate_call_fee(self, call: Call) -> Money:
-        if call.__from.hour() >= self.LATE_NIGHT_HOUR:
-            return self.__nightly_amount.times(call.duration.total_seconds() / self.__seconds.total_seconds())
-        else:
-            return self.__regular_amount.times(call.duration.total_seconds() / self.__seconds.total_seconds())
-
-
 class RatePolicy(metaclass=ABC):
     def calculate_fee(self, phone) -> Money:
+        NotImplementedError()
+
+
+class AdditionalRatePolicy(RatePolicy):
+    def __init__(self):
+        self.__next: RatePolicy = None
+
+    def calculate_fee(self, phone) -> Money:
+        fee = self.__next.calculate_fee(phone)
+        return self.after_calculated(fee)
+
+    @abc.abstractmethod
+    def after_calculated(self, fee: Money):
         NotImplementedError()
 
 
@@ -171,10 +111,29 @@ class NightlyDiscountPolicy(BasicRatePolicy):
         return self.__regular_amount.times(call.duration.total_seconds() / self.__seconds.total_seconds())
 
 
+class TaxablePolicy(AdditionalRatePolicy):
+    def __init__(self, tax_ratio, _next):
+        super().__init__()
+        self.__tax_ratio: float = tax_ratio
+
+    def after_calculated(self, fee: Money):
+        return fee.plus(fee.times(self.__tax_ratio))
+
+
+class RateDiscountablePolicy(AdditionalRatePolicy):
+    def __init__(self, discount_amount, _next):
+        super().__init__()
+        self.__discount_amount: Money = discount_amount
+
+    def after_calculated(self, fee: Money):
+        return fee.minus(self.__discount_amount)
+
+
 if __name__ == '__main__':
     money = Money()
-    money.wons = 5
-    #
+    money.wons = 10
+
+
     # phone = Phone(money, datetime.timedelta(seconds=10))
     # phone.call = Call(datetime.datetime(2018, 1, 1, 12, 10, 0), datetime.datetime(2018, 1, 1, 12, 11, 0))
     # phone.call = Call(datetime.datetime(2018, 1, 2, 12, 10, 0), datetime.datetime(2018, 1, 2, 12, 11, 0))
