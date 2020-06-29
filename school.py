@@ -8,6 +8,10 @@ class Lecture(object):
     def scores(self):
         return self.__scores
 
+    @property
+    def _pass(self):
+        return self.__pass
+
     def average(self) -> []:
         return self.__scores
 
@@ -18,7 +22,12 @@ class Lecture(object):
         return len(self.__scores) - self.pass_count()
 
     def pass_count(self) -> int:
-        return len([_ for _ in self.__scores if _ >= self.__pass])
+        tmp = []
+        for _ in self.scores:
+            if _ >= self.__pass:
+                tmp.append(_)
+        return len(tmp)
+        # return len([_ for _ in self.scores if _ >= self.__pass])
 
 
 class Grade(object):
@@ -55,6 +64,16 @@ class GradeLecture(Lecture):
 
     def _grade_count(self, grade: Grade) -> int:
         # return len([_.include(grade.include(_)) for _ in self.scores])
+        return len(grade)
+
+
+class Professor(object):
+    def __init__(self, name, lecture):
+        self.__name: str = name
+        self.__lecture: Lecture = lecture
+
+    def compile_statistics(self):
+        return f'{self.__name}, {self.__lecture.evaluate()}, {self.__lecture.average()}'
 
 
 if __name__ == '__main__':
@@ -62,9 +81,11 @@ if __name__ == '__main__':
     # evaluate = lecture.evaluate()
     # print(evaluate)
 
-    gradelecture = GradeLecture(title='test', _pass=70,
-                                scores=[Grade('A', 100, 95), Grade('B', 94, 80), Grade('C', 79, 70),
-                                        Grade('D', 69, 50), Grade('F', 49, 0)],
-                                grades=[81, 95, 75, 50, 45])
-
-    gradelecture.evaluate()
+    # gradelecture = GradeLecture(title='test', _pass=70,
+    #                             scores=[Grade('A', 100, 95), Grade('B', 94, 80), Grade('C', 79, 70),
+    #                                     Grade('D', 69, 50), Grade('F', 49, 0)],
+    #                             grades=[81, 95, 75, 50, 45])
+    #
+    # gradelecture.evaluate()
+    professor = Professor('다익스트라', Lecture(title='알고리즘', _pass=70, scores=[81, 95, 75, 50, 45]))
+    statistics = professor.compile_statistics()
