@@ -22,11 +22,11 @@ class Lecture(object):
         return len(self.__scores) - self.pass_count()
 
     def pass_count(self) -> int:
-        tmp = []
+        passed = []
         for _ in self.scores:
             if _ >= self.__pass:
-                tmp.append(_)
-        return len(tmp)
+                passed.append(_)
+        return len(passed)
         # return len([_ for _ in self.scores if _ >= self.__pass])
 
 
