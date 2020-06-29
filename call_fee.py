@@ -86,10 +86,10 @@ class BasicRatePolicy(RatePolicy):
         NotImplementedError()
 
 
-class RegularPolicy(BasicRatePolicy):
+class FixedFeePolicy(BasicRatePolicy):
     def __init__(self, amount=None, seconds=None):
         super().__init__()
-        self.__amount = amount
+        self.__amount: Money = amount
         self.__seconds = seconds
 
     def calculate_call_fee(self, call: Call):
