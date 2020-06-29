@@ -63,8 +63,11 @@ class GradeLecture(Lecture):
         return f'{grade.name}: {self._grade_count(grade)}'
 
     def _grade_count(self, grade: Grade) -> int:
-        # return len([_.include(grade.include(_)) for _ in self.scores])
-        return len(grade)
+        tmp = []
+        for _ in self.scores:
+            if grade.include(_):
+                tmp.append(_)
+        return len(tmp)
 
 
 class Professor(object):
@@ -87,5 +90,9 @@ if __name__ == '__main__':
     #                             grades=[81, 95, 75, 50, 45])
     #
     # gradelecture.evaluate()
-    professor = Professor('다익스트라', Lecture(title='알고리즘', _pass=70, scores=[81, 95, 75, 50, 45]))
+    professor = Professor('다익스트라', GradeLecture(title='알고리즘', _pass=70,
+                                                grades=[Grade('A', 100, 95), Grade('B', 94, 80), Grade('C', 79, 70),
+                                                        Grade('D', 69, 50), Grade('F', 49, 0)],
+                                                scores=[81, 95, 75, 50, 45]))
     statistics = professor.compile_statistics()
+    print(statistics)
