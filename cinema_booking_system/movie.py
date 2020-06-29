@@ -1,14 +1,19 @@
 import abc
 from abc import ABCMeta
 
-from cinema_booking_system.discount import DiscountCondition
+from cinema_booking_system.discount import DiscountCondition, DiscountPolicy
 from cinema_booking_system.money import Money
 from cinema_booking_system.screening import Screening
+import datetime
+
+
+class InvaildScreeningException(Exception):
+    pass
 
 
 class Movie(metaclass=ABCMeta):
     def __init__(self, title, running_time, fee, discount_condition, discount_policy):
-        self.__discount_policy = discount_policy
+        self.__discount_policy: DiscountPolicy = discount_policy
         self.__title: str = title
         self.__running_time: int = running_time
         self.__fee: Money = fee
@@ -28,9 +33,10 @@ class Movie(metaclass=ABCMeta):
                 return True
 
     def calculate_movie_fee(self, screening: Screening) -> Money:
-        if self._is_discountable(screening):
-            return self.__fee.minus(self.__calculate_discount_amount())
-        return self.__fee
+        if screening is None and screening.get_start_time() >= datetime.datetime.now():
+            raise InvaildScreeningException()
+        # if self._is_discountable(screening):
+        return self.__fee.minus(self.__discount_policy.__calculate_discount_amount(screening))
 
     @abc.abstractmethod
     def __calculate_discount_amount(self):

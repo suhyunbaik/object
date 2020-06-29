@@ -11,14 +11,14 @@ from cinema_booking_system.utils import compare_to
 
 
 class MovieType(Enum):
-    AMOUNT_DISCOUNT = 0
-    PERCENT_DISCOUNT = 1
-    NONE_DISCOUNT = 2
+    AMOUNT_DISCOUNT = 'amount_discount'
+    PERCENT_DISCOUNT = 'percent_discount'
+    NONE_DISCOUNT = 'none_discount'
 
 
 class DiscountConditionType(Enum):
-    SEQUENCE = 0
-    PERIOD = 1
+    SEQUENCE = 'sequence'
+    PERIOD = 'period'
 
 
 class DiscountPolicy(metaclass=ABCMeta):
@@ -31,11 +31,25 @@ class DiscountPolicy(metaclass=ABCMeta):
     def conditions(self, arg: [DiscountCondition]):
         self._conditions = arg
 
+    @staticmethod
+    def __check_precondition(screening: Screening) -> NoReturn:
+        assert screening is not None, screening.get_start_time() >= datetime.datetime.now()
+
+    @staticmethod
+    def __check_postcondition(amount: Money) -> NoReturn:
+        assert amount is not None, amount.is_greater_than_or_equal(Money.ZERO)
+
     def calculate_discount_amount(self, screening: Screening):
+        self.__check_precondition(screening)
+
+        amount = Money.ZERO
         for condition in self.conditions:
             if condition.is_satisfied_by(screening):
-                return self.get_discount_amount(screening)
-        return Money.ZERO
+                self.__check_postcondition(amount)
+                return amount
+        amount = screening.get_movie_fee()
+        self.__check_postcondition(amount)
+        return amount
 
     def switch_conditions(self, conditions) -> NoReturn:
         self.conditions = conditions
