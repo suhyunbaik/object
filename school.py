@@ -29,6 +29,12 @@ class Lecture(object):
         return len(passed)
         # return len([_ for _ in self.scores if _ >= self.__pass])
 
+    def stats(self):
+        return f'Title: {self.__title}, Evaluation Method: {self.get_evaluation_method()}'
+
+    def get_evaluation_method(self) -> str:
+        return 'Pass or Fail'
+
 
 class Grade(object):
     def __init__(self, name, upper, lower):
@@ -79,6 +85,14 @@ class Professor(object):
         return f'{self.__name}, {self.__lecture.evaluate()}, {self.__lecture.average()}'
 
 
+class FormattedGradeLecture(GradeLecture):
+    def __init__(self, _pass, grades, scores, title):
+        super().__init__(_pass, title, scores, grades)
+
+    def format_average(self):
+        return f'Avg: {super().average()}'
+
+
 if __name__ == '__main__':
     # lecture = Lecture(_pass=70, title='test', scores=[81, 95, 75, 50, 45])
     # evaluate = lecture.evaluate()
@@ -95,4 +109,8 @@ if __name__ == '__main__':
                                                         Grade('D', 69, 50), Grade('F', 49, 0)],
                                                 scores=[81, 95, 75, 50, 45]))
     statistics = professor.compile_statistics()
-    print(statistics)
+
+    formatted_grade_lecture = FormattedGradeLecture(_pass=70, title='테스트', scores=[81, 95, 75, 50, 45],
+                                                    grades=[Grade('A', 100, 95), Grade('B', 94, 80), Grade('C', 79, 70),
+                                                            Grade('D', 69, 50), Grade('F', 49, 0)])
+    print(formatted_grade_lecture.format_average())
