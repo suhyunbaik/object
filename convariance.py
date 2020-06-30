@@ -1,3 +1,6 @@
+from typing import NoReturn
+
+
 class Publisher(object):
     def __init__(self):
         pass
@@ -9,12 +12,12 @@ class IndependentPublisher(Publisher):
 
 
 class Book(object):
-    def __init__(self, publisher=None):
+    def __init__(self, publisher: Publisher):
         self.__publisher = publisher
 
 
 class Magazine(Book):
-    def __init__(self, publisher):
+    def __init__(self, publisher: Publisher):
         super().__init__(publisher)
 
 
@@ -32,11 +35,11 @@ class Customer(object):
     def __init__(self, book=None):
         self.__book: Book = book
 
-    def order(self, bookstall: BookStall):
+    def order(self, bookstall: BookStall) -> NoReturn:
         self.__book = bookstall.sell(IndependentPublisher())
 
 
-if __name__ =='__main__':
+if __name__ == '__main__':
     customer = Customer().order(BookStall())
     customers = Customer().order(MagazineStore())
     print(customer, customers)
