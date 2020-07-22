@@ -7,7 +7,7 @@ class Song(object):
     def singer(self):
         return self._singer
 
-    @singer.getter
+    @singer.setter
     def singer(self, arg):
         self._singer = arg
 
@@ -15,7 +15,7 @@ class Song(object):
     def title(self):
         return self._title
 
-    @title.getter
+    @title.setter
     def title(self, arg):
         self._title = arg
 
